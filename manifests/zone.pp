@@ -24,6 +24,7 @@ define dns::zone (
   Integer $negttl                                       = 3600,
   Integer $serial                                       = 1,
   Array $masters                                        = [],
+  Enum['text', 'raw'] $masterfile_format                = 'text',
   Array $allow_transfer                                 = [],
   Array $allow_query                                    = [],
   Array $also_notify                                    = [],
