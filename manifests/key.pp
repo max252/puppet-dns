@@ -1,14 +1,27 @@
 # Generate a new key for the dns
 #
-# === Parameters:
+# @param algorithm
+#   The algorithm used to generate the secret key
 #
-# $secret::                     This is the secret to be place inside the keyfile, if left empty the key will be generated
-#    
+# @param filename
+#   The filename to store the key. This is placed in the key directory.
+#
+# @param secret
+#   This is the secret to be place inside the keyfile, if left empty the key
+#   will be generated
+#
+# @param keydir
+#   The directory to store the key in. Inherited from the main dns class by default.
+#
+# @param keysize
+#   The size of the key to generate. Only used when generating the key. It's
+#   ignored if when a key is specified.
+#
 define dns::key(
   String               $algorithm    = 'hmac-md5',
   String               $filename     = "${name}.key",
   Optional[String]     $secret       = undef,
-  Stdlib::Absolutepath $keydir       = $::dns::dnsdir,
+  Stdlib::Absolutepath $keydir       = $dns::dnsdir,
   Integer              $keysize      = 512,
 ) {
   $keyfilename = "${keydir}/${filename}"
@@ -20,13 +33,13 @@ define dns::key(
       group   => $dns::group,
       mode    => '0640',
       content => template('dns/key.erb'),
-      notify  => Service[$::dns::namedservicename],
+      notify  => Class['dns::service'],
     }
   } else {
     exec { "create-${filename}":
       command => "${dns::rndcconfgen} -r /dev/urandom -a -c ${keyfilename} -b ${keysize} -k ${name}",
       creates => $keyfilename,
-      notify  => Service[$::dns::namedservicename],
+      notify  => Class['dns::service'],
     }-> file { $keyfilename:
       owner => 'root',
       group => $dns::params::group,
@@ -35,7 +48,7 @@ define dns::key(
   }
 
   concat::fragment { "named.conf+20-key-${name}.dns":
-    target  => $::dns::namedconf_path,
+    target  => $dns::namedconf_path,
     content => "include \"${keyfilename}\";\n",
     order   => '20',
   }

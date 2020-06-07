@@ -1,18 +1,6 @@
 require 'spec_helper_acceptance'
 
 describe 'Scenario: install bind with views enabled' do
-
-  before(:context) do
-    case fact('osfamily')
-    when 'Debian'
-      utils = 'dnsutils'
-    else
-      utils = 'bind-utils'
-    end
-
-    on default, puppet("resource package #{utils} ensure=present")
-  end
-
   context 'with views enabled' do
     let(:pp) do
       <<-EOS
@@ -31,6 +19,7 @@ describe 'Scenario: install bind with views enabled' do
       dns::zone { 'example.com-v4':
         zone         => 'example.com',
         soa          => 'ns1-v4.example.com',
+        soaip        => '192.0.2.1',
         filename     => 'db.example.com-v4',
         target_views => ['v4'],
       }
@@ -38,6 +27,7 @@ describe 'Scenario: install bind with views enabled' do
       dns::zone { 'example.com-v6':
         zone         => 'example.com',
         soa          => 'ns1-v6.example.com',
+        soaipv6      => '2001:db8::1',
         filename     => 'db.example.com-v6',
         target_views => ['v6'],
       }
@@ -46,12 +36,7 @@ describe 'Scenario: install bind with views enabled' do
 
     it_behaves_like 'a idempotent resource'
 
-    service_name = case fact('osfamily')
-                   when 'Debian'
-                     'bind9'
-                   else
-                     'named'
-                   end
+    service_name = fact('osfamily') == 'Debian' ? 'bind9' : 'named'
 
     describe service(service_name) do
       it { is_expected.to be_enabled }
@@ -67,10 +52,7 @@ describe 'Scenario: install bind with views enabled' do
     end
 
     describe command('dig +short SOA example.com @::1') do
-      its(:stdout) do
-        pending("IPv6 support in docker containers on Travis is broken") if ENV['TRAVIS'] == 'true'
-        is_expected.to match("ns1-v6.example.com. root.example.com. 1 86400 3600 604800 3600\n")
-      end
+      its(:stdout) { is_expected.to match("ns1-v6.example.com. root.example.com. 1 86400 3600 604800 3600\n") }
     end
   end
 end

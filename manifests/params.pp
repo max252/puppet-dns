@@ -1,6 +1,7 @@
 # Default parameters
+# @api private
 class dns::params {
-  case $::osfamily {
+  case $facts['os']['family'] {
     'Debian': {
       $dnsdir             = '/etc/bind'
       $vardir             = '/var/cache/bind'
@@ -15,6 +16,14 @@ class dns::params {
       $user               = 'bind'
       $group              = 'bind'
       $rndcconfgen        = '/usr/sbin/rndc-confgen'
+      $named_checkconf    = '/usr/sbin/named-checkconf'
+      $sysconfig_file     = '/etc/default/bind9'
+      $sysconfig_template = "dns/sysconfig.${facts['os']['family']}.erb"
+      $sysconfig_startup_options = '-u bind'
+      $sysconfig_resolvconf_integration = false
+
+      # This option is not relevant for Debian
+      $sysconfig_disable_zone_checking = undef
     }
     'RedHat': {
       $dnsdir             = '/etc'
@@ -30,6 +39,14 @@ class dns::params {
       $user               = 'named'
       $group              = 'named'
       $rndcconfgen        = '/usr/sbin/rndc-confgen'
+      $named_checkconf    = '/usr/sbin/named-checkconf'
+      $sysconfig_file     = '/etc/sysconfig/named'
+      $sysconfig_template = "dns/sysconfig.${facts['os']['family']}.erb"
+      $sysconfig_startup_options = undef
+      $sysconfig_disable_zone_checking = undef
+
+      # This option is not relevant for RedHat
+      $sysconfig_resolvconf_integration = undef
     }
     /^(FreeBSD|DragonFly)$/: {
       $dnsdir             = '/usr/local/etc/namedb'
@@ -45,11 +62,18 @@ class dns::params {
       $user               = 'bind'
       $group              = 'bind'
       $rndcconfgen        = '/usr/local/sbin/rndc-confgen'
+      $named_checkconf    = '/usr/local/sbin/named-checkconf'
+      # The sysconfig settings are not relevant for FreeBSD
+      $sysconfig_file     = undef
+      $sysconfig_template = undef
+      $sysconfig_startup_options = undef
+      $sysconfig_disable_zone_checking = undef
+      $sysconfig_resolvconf_integration = undef
     }
     'Archlinux': {
       $dnsdir             = '/etc'
       $vardir             = '/var/named'
-      $optionspath        = '/etc/named.options.conf'
+      $optionspath        = "${dnsdir}/named.options.conf"
       $zonefilepath       = "${vardir}/dynamic"
       $localzonepath      = 'unmanaged' # "${dnsdir}/named.local.conf"
       $defaultzonepath    = 'unmanaged'
@@ -60,14 +84,31 @@ class dns::params {
       $user               = 'named'
       $group              = 'named'
       $rndcconfgen        = '/usr/sbin/rndc-confgen'
+      $named_checkconf    = '/usr/sbin/named-checkconf'
+      # The sysconfig settings are not relevant for ArchLinux
+      $sysconfig_file     = undef
+      $sysconfig_template = undef
+      $sysconfig_startup_options = undef
+      $sysconfig_disable_zone_checking = undef
+      $sysconfig_resolvconf_integration = undef
     }
     default: {
-      fail ("Unsupported operating system family ${::osfamily}")
+      fail ("Unsupported operating system family ${facts['os']['family']}")
     }
   }
 
+  # This module will manage the system group by default
+  $group_manage = true
+
+  # Don't set any restart command by default, let Puppet use the
+  # platform-dependent service resource default when handling the service
+  # restart.
+  $service_restart_command = undef
+
   $namedconf_template    = 'dns/named.conf.erb'
   $optionsconf_template  = 'dns/options.conf.erb'
+
+  $sysconfig_additional_settings = {}
 
   $namedconf_path        = "${dnsdir}/named.conf"
 
@@ -100,6 +141,7 @@ class dns::params {
     },
   }
 
+  $manage_service        = true
   $service_ensure        = 'running'
   $service_enable        = true
   $acls                  = {}
@@ -108,4 +150,5 @@ class dns::params {
   $additional_directives = []
 
   $zones                 = {}
+  $keys                  = {}
 }

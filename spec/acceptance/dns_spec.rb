@@ -1,35 +1,21 @@
 require 'spec_helper_acceptance'
 
 describe 'Scenario: install bind' do
-  before(:context) do
-    case fact('osfamily')
-    when 'Debian'
-      utils = 'dnsutils'
-    else
-      utils = 'bind-utils'
-    end
-
-    on default, puppet("resource package #{utils} ensure=present")
-  end
-
   let(:pp) do
     <<-EOS
-    include ::dns
+    include dns
 
     dns::zone { 'example.com':
-      soa => 'ns1.example.com',
+      soa     => 'ns1.example.com',
+      soaip   => '192.0.2.1',
+      soaipv6 => '2001:db8::1',
     }
     EOS
   end
 
   it_behaves_like 'a idempotent resource'
 
-  service_name = case fact('osfamily')
-                 when 'Debian'
-                   'bind9'
-                 else
-                   'named'
-                 end
+  service_name = fact('osfamily') == 'Debian' ? 'bind9' : 'named'
 
   describe service(service_name) do
     it { is_expected.to be_enabled }

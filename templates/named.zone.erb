@@ -7,17 +7,33 @@ zone "<%= @zone %>" {
     forwarders { <%= @forwarders.join('; ') %>; };
 <% end -%>
 <% end -%>
-<% if @manage_file or @manage_file_name -%>
+<% if (@manage_file || @manage_file_name) && @zonetype != 'forward' -%>
     file "<%= @zonefilename %>";
 <% end -%>
 <% if @zonetype == 'master' -%>
+<%   if @update_policy.is_a? String -%>
+    update-policy <%= @update_policy %>;
+<%   elsif @update_policy -%>
     update-policy {
-            grant rndc-key zonesub ANY;
-            <%- @update_policy_rules.sort_by {|k, v| k}.each do |key, key_hash| -%>
-            grant <%= key %> <%= key_hash['matchtype'] %> <% if key_hash['tname'] %><%= key_hash['tname'] %> <% end %><% if key_hash['rr'] %><%= key_hash['rr'] %><% end %>;
+            <%- @update_policy.sort_by {|k, v| k}.each do |key, key_hash| -%>
+            <%= key_hash['action'] || 'grant' %> <%= key %> <%= key_hash['matchtype'] %> <% if key_hash['tname'] %><%= key_hash['tname'] %> <% end %><%= key_hash['rr'] %>;
             <%- end -%>
     };
+<%   end -%>
 <% end -%>
+<% if @auto_dnssec -%>
+    auto-dnssec <%= @auto_dnssec %>;
+<% end -%>
+<% if @dnssec_secure_to_insecure -%>
+    dnssec-secure-to-insecure <%= @dnssec_secure_to_insecure %>;
+<% end -%>
+<% if @inline_signing -%>
+    inline-signing <%= @inline_signing %>;
+<% end -%>
+<% if @key_directory -%>
+    key-directory "<%= @key_directory %>";
+<% end -%>
+<% unless @zonetype == 'forward' -%>
 <% unless @allow_transfer.empty? -%>
     allow-transfer { <%= @allow_transfer.join('; ') %>; };
 <% end -%>
@@ -32,5 +48,6 @@ zone "<%= @zone %>" {
 <% end -%>
 <% if @_dns_notify -%>
     notify <%= @_dns_notify %>;
+<% end -%>
 <% end -%>
 };
