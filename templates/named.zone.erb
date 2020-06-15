@@ -1,6 +1,8 @@
 zone "<%= @zone %>" {
     type <%= @zonetype %>;
+<% if @zonetype != 'hint' -%>
     masterfile-format <%= @masterfile_format %>;
+<% end -%>
 <% if @zonetype == 'forward' -%>
     forward <%= @forward %>;
 <% unless @forwarders.empty? -%>
