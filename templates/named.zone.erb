@@ -23,6 +23,12 @@ zone "<%= @zone %>" {
     };
 <%   end -%>
 <% end -%>
+<% if @max_refresh_time != 0 -%>
+    max-refresh-time <%= @max_refresh_time %>;
+<% end -%>
+<% if @min_refresh_time != 0 -%>
+    min-refresh-time <%= @min_refresh_time %>;
+<% end -%>
 <% if @auto_dnssec -%>
     auto-dnssec <%= @auto_dnssec %>;
 <% end -%>

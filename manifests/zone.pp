@@ -55,6 +55,8 @@ define dns::zone (
   Optional[Enum['yes', 'no']] $inline_signing             = undef,
   Optional[Enum['yes', 'no']] $dnssec_secure_to_insecure  = undef,
   Optional[Enum['allow', 'maintain', 'off']] $auto_dnssec = undef,
+  Optional[Integer] $min_refresh_time                     = 0,
+  Optional[Integer] $max_refresh_time                     = 0,
 ) {
 
   $_contact = pick($contact, "root.${zone}.")
