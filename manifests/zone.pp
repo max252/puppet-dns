@@ -41,6 +41,7 @@ define dns::zone (
   Array $allow_transfer                                   = [],
   Array $allow_query                                      = [],
   Array $also_notify                                      = [],
+  Array $allow_notify                                     = [],
   String $zone                                            = $title,
   Optional[String] $contact                             = undef,
   Stdlib::Absolutepath $zonefilepath                    = $::dns::zonefilepath,

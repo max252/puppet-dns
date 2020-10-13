@@ -51,6 +51,9 @@ zone "<%= @zone %>" {
 <% unless @also_notify.empty? -%>
     also-notify { <%= @also_notify.join('; ') %>; };
 <% end -%>
+<% unless @allow_notify.empty? -%>
+    allow-notify { <%= @allow_notify.join('; ') %>; };
+<% end -%>
 <% unless @masters.empty? -%>
     masters { <%= @masters.join('; ') %>; };
 <% end -%>
