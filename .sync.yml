@@ -1,12 +1,9 @@
 ---
-.puppet-lint.rc:
-  extra_disabled_lint_checks:
-    - parameter_documentation
-.travis.yml:
-  beaker_sets:
-    - centos6-64
-    - debian8-64
-    - debian9-64
-    - debian10-64
-    - ubuntu1604-64
-    - ubuntu1804-64
+.github/workflows/acceptance.yml:
+  excludes:
+    - setfile: fedora32-64{hostname=fedora32-64.example.com}
+      puppet: "5"
+.github/workflows/cron.yml:
+  excludes:
+    - setfile: fedora32-64{hostname=fedora32-64.example.com}
+      puppet: "5"

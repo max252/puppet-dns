@@ -112,6 +112,8 @@ class dns::params {
 
   $namedconf_path        = "${dnsdir}/named.conf"
 
+  $logdir                = '/var/log/named'
+
   #pertaining to rndc
   $rndckeypath           = "${dnsdir}/rndc.key"
 
@@ -144,6 +146,7 @@ class dns::params {
   $manage_service        = true
   $service_ensure        = 'running'
   $service_enable        = true
+  $config_check          = true
   $acls                  = {}
 
   $additional_options    = {}
@@ -151,4 +154,6 @@ class dns::params {
 
   $zones                 = {}
   $keys                  = {}
+  $logging_categories    = {}
+  $logging_channels      = {}
 }
